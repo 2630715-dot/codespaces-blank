@@ -1,287 +1,121 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Todo 앱</title>
-  <style>
-    :root {
-      --bg: #ffe9f2;
-      --surface: #ffd6e7;
-      --text: #350029;
-      --border: #f7c7de;
-      --accent: #d9417e;
-    }
+    <meta charset="UTF-8">
+    <title>유튜브 재생 - 플레이브 흥흥흥</title>
+    <style>
+        /* 기본 배경을 하늘색으로 설정 및 중앙 정렬 */
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #e0f2fe; /* 하늘색 배경 */
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
 
-    [data-theme="dark"] {
-      --bg: #2f1424;
-      --surface: #431837;
-      --text: #ffe5f2;
-      --border: #6f2d4f;
-      --accent: #ff8fc5;
-    }
+        /* 전체 레이아웃 구역 (두 개의 세트가 들어가는 컨테이너) */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            max-width: 1200px;
+            gap: 40px; /* 첫 번째 세트와 두 번째 세트 사이의 간격 */
+        }
 
-    * {
-      box-sizing: border-box;
-    }
+        /* [동영상 + 소개글] 한 세트를 묶어주는 상자 */
+        .video-set {
+            display: flex;
+            align-items: center; /* 영상과 글씨의 높이를 가운데로 맞춤 */
+            gap: 20px; /* 영상과 소개글 사이의 간격 */
+            background: rgba(255, 255, 255, 0.5); /* 글씨가 잘 보이도록 반투명 흰색 배경 추가 */
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: "Pretendard", system-ui, sans-serif;
-      background: linear-gradient(180deg, #ffe9f2 0%, #ffd6e7 50%, #f9d1e0 100%);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 24px;
-    }
+        /* 동영상이 들어가는 구역 (서로 1:1 크기 유지) */
+        .video-box {
+            flex: 1; /* 영상을 좌우 균등하게 1:1 비율로 맞춤 */
+            position: relative;
+            width: 100%;
+            padding-top: 28%; /* 1:1 화면 안에서 16:9 유튜브 비율을 맞추기 위한 수치 */
+        }
 
-    .app {
-      width: min(640px, 100%);
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
+        /* iframe 실측 스타일 */
+        .video-box iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
 
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      background: rgba(255, 255, 255, 0.68);
-      padding: 20px 24px;
-      gap: 12px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(12px);
-    }
+        /* 동영상 바로 옆 소개글 스타일 */
+        .video-text {
+            flex: 1; /* 글씨 구역도 균등하게 공간을 나눠 가짐 */
+            font-size: 28px; /* 글씨 크기 (큼직하게 설정) */
+            font-weight: bold;
+            color: #1e3a8a; /* 진한 파란색 글씨 */
+            padding-left: 10px;
+            word-break: keep-all;
+        }
 
-    .header h1 {
-      margin: 0;
-      font-size: 1.25rem;
-      letter-spacing: -0.03em;
-    }
-
-    .controls {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      padding: 20px 24px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 12px;
-      width: 100%;
-    }
-
-    .input-row input {
-      flex: 1;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 14px 18px;
-      font-size: 1rem;
-      background: rgba(255, 255, 255, 0.9);
-      color: var(--text);
-      outline: none;
-    }
-
-    .input-row button,
-    .theme-toggle {
-      border: none;
-      border-radius: 999px;
-      padding: 0 18px;
-      min-width: 56px;
-      height: 48px;
-      font-size: 1.05rem;
-      cursor: pointer;
-      color: white;
-      background: var(--accent);
-      box-shadow: 0 12px 30px rgba(217, 65, 126, 0.22);
-      transition: transform 0.15s ease, background 0.2s ease;
-    }
-
-    .input-row button:hover,
-    .theme-toggle:hover {
-      transform: translateY(-1px);
-      background: #ff5aa5;
-    }
-
-    .theme-toggle {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 16px;
-    }
-
-    .tasks {
-      padding: 0 24px 24px;
-    }
-
-    .task-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 12px;
-    }
-
-    .task-item {
-      display: grid;
-      grid-template-columns: auto 1fr;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 18px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.85);
-      border: 1px solid var(--border);
-      transition: transform 0.2s ease;
-    }
-
-    .task-item:hover {
-      transform: translateY(-1px);
-    }
-
-    .task-item input {
-      width: 20px;
-      height: 20px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
-
-    .task-item label {
-      margin: 0;
-      cursor: pointer;
-      font-size: 1rem;
-      color: var(--text);
-      transition: color 0.2s ease;
-      user-select: none;
-      display: block;
-      line-height: 1.4;
-    }
-
-    .task-item input:checked + label {
-      text-decoration: line-through;
-      color: #8c6d83;
-    }
-
-    .empty-state {
-      margin-top: 16px;
-      color: #9a5d88;
-      font-size: 0.95rem;
-      text-align: center;
-    }
-
-    [data-theme="dark"] body {
-      background: linear-gradient(180deg, #32112c 0%, #3c183a 60%, #4d1d49 100%);
-    }
-
-    [data-theme="dark"] .app {
-      background: rgba(39, 20, 35, 0.92);
-      border-color: #5e2751;
-    }
-
-    [data-theme="dark"] .header {
-      background: rgba(255, 255, 255, 0.06);
-      border-bottom-color: rgba(255, 255, 255, 0.08);
-    }
-
-    [data-theme="dark"] .input-row input {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.1);
-      color: #ffe5f2;
-    }
-
-    [data-theme="dark"] .task-item {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
-
-    [data-theme="dark"] .task-item label {
-      color: #ffedf5;
-    }
-
-    [data-theme="dark"] .task-item input:checked + label {
-      color: #d7b5d8;
-    }
-  </style>
+        /* 화면이 좁아지는 모바일 환경 대응 */
+        @media (max-width: 768px) {
+            .video-set {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .video-box {
+                padding-top: 56.25%;
+            }
+            .video-text {
+                padding-top: 10px;
+                padding-left: 0;
+            }
+        }
+    </style>
 </head>
-<body data-theme="light">
-  <div class="app">
-    <div class="header">
-      <div>
-        <h1>Pink Todo</h1>
-        <p style="margin: 6px 0 0; color: rgba(53, 0, 41, 0.8); font-size: 0.95rem;">작업을 추가하고 완료하면 가로줄로 표시됩니다.</p>
-      </div>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">🌙</button>
+<body>
+
+    <div class="main-container">
+        
+        <div class="video-set">
+            <div class="video-box">
+                <iframe 
+                    src="https://www.youtube.com/embed/K-F7906Jq9U" 
+                    title="플레이브 영상 1" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="video-text">플레이브 흥흥흥</div>
+        </div>
+
+        <div class="video-set">
+            <div class="video-box">
+                <iframe 
+                    src="https://www.youtube.com/embed/cFm8fTRW_so?playlist=cFm8fTRW_so&loop=1" 
+                    title="플레이브 영상 2" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                    referrerpolicy="strict-origin-when-cross-origin" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div class="video-text">플레이브 기다릴게</div>
+        </div>
+
     </div>
 
-    <div class="controls">
-      <div class="input-row">
-        <input id="newTask" type="text" placeholder="새 작업을 입력하세요" aria-label="새 작업 입력" />
-        <button id="addTask" type="button" aria-label="Add task">➕</button>
-      </div>
-    </div>
-
-    <section class="tasks">
-      <ul class="task-list" id="taskList"></ul>
-      <p class="empty-state" id="emptyState">작업을 추가해보세요.</p>
-    </section>
-  </div>
-
-  <script>
-    const body = document.body;
-    const themeToggle = document.getElementById('themeToggle');
-    const addTask = document.getElementById('addTask');
-    const newTask = document.getElementById('newTask');
-    const taskList = document.getElementById('taskList');
-    const emptyState = document.getElementById('emptyState');
-
-    function updateEmptyState() {
-      emptyState.style.display = taskList.children.length ? 'none' : 'block';
-    }
-
-    function createTaskItem(text) {
-      const id = `task-${Date.now()}`;
-      const item = document.createElement('li');
-      item.className = 'task-item';
-
-      const checkbox = document.createElement('input');
-      checkbox.type = 'radio';
-      checkbox.name = 'todo-radio';
-      checkbox.id = id;
-
-      const label = document.createElement('label');
-      label.htmlFor = id;
-      label.textContent = text;
-
-      item.appendChild(checkbox);
-      item.appendChild(label);
-      return item;
-    }
-
-    function addTaskItem() {
-      const value = newTask.value.trim();
-      if (!value) return;
-      taskList.appendChild(createTaskItem(value));
-      newTask.value = '';
-      updateEmptyState();
-    }
-
-    addTask.addEventListener('click', addTaskItem);
-    newTask.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') addTaskItem();
-    });
-
-    themeToggle.addEventListener('click', () => {
-      const current = body.getAttribute('data-theme');
-      const nextTheme = current === 'light' ? 'dark' : 'light';
-      body.setAttribute('data-theme', nextTheme);
-      themeToggle.textContent = nextTheme === 'light' ? '🌙' : '☀️';
-    });
-
-    updateEmptyState();
-  </script>
 </body>
 </html>
+
